@@ -14,7 +14,7 @@ class MovieViewModel {
     
     var onUpdate: (() -> Void)?
     
-    func fetchRandomTrendingMovie() {
+    func fetchRandomTrendingMovie(retryCount: Int = 1) {
         NetworkManager.shared.fetchTrendingmovies { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
@@ -22,11 +22,53 @@ class MovieViewModel {
                     self?.movies = movies
                     self?.currentMovie = movies.randomElement()
                     self?.onUpdate?()
-                case .failure(let error):
-                    print("Failed to fetch movies: \(error.localizedDescription)")
+                case .failure(let error as NSError):
+                    if error.code == NSURLErrorNetworkConnectionLost && retryCount > 0 {
+                        print("Connection lost, retrying...")
+                        self?.fetchRandomTrendingMovie(retryCount: retryCount - 1)
+                    } else {
+                        print("Failed to fetch movies: \(error.localizedDescription)")
+                    }
                 }
             }
         }
+    }
+    
+//    func fetchRandomTrendingMovie() {
+//        NetworkManager.shared.fetchTrendingmovies { [weak self] result in
+//            DispatchQueue.main.async {
+//                switch result {
+//                case .success(let movies):
+//                    self?.movies = movies
+//                    self?.currentMovie = movies.randomElement()
+//                    self?.onUpdate?()
+//                case .failure(let error):
+//                    print("Failed to fetch movies: \(error.localizedDescription)")
+//                }
+//            }
+//        }
+//    }
+    
+    func search(byGenre genre: String) {
+        NetworkManager.shared.fetchMovies(byGenre: genre) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let movies):
+                    if movies.isEmpty {
+                        print("No movies found for genre: \(genre)")
+                    }
+                    self?.setRandomMovie(from: movies)
+                case .failure(let error):
+                    print("Failed to fetch movies by genre: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    private func setRandomMovie(from movies: [Movie]) {
+        self.movies = movies
+        self.currentMovie = movies.randomElement()
+        self.onUpdate?()
     }
     
     var title: String {
