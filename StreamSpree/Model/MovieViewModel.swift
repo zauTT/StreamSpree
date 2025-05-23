@@ -34,21 +34,6 @@ class MovieViewModel {
         }
     }
     
-//    func fetchRandomTrendingMovie() {
-//        NetworkManager.shared.fetchTrendingmovies { [weak self] result in
-//            DispatchQueue.main.async {
-//                switch result {
-//                case .success(let movies):
-//                    self?.movies = movies
-//                    self?.currentMovie = movies.randomElement()
-//                    self?.onUpdate?()
-//                case .failure(let error):
-//                    print("Failed to fetch movies: \(error.localizedDescription)")
-//                }
-//            }
-//        }
-//    }
-    
     func search(byGenre genre: String) {
         NetworkManager.shared.fetchMovies(byGenre: genre) { [weak self] result in
             DispatchQueue.main.async {
