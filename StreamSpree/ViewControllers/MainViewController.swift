@@ -157,6 +157,37 @@ class MainViewController: UIViewController {
             self.overviewLabel.text = self.viewModel.overwiev
             self.loadImage()
         }
+        
+        viewModel.onNoResults = { [weak self] in
+            self?.showToast(message: "No movies matched your filters.")
+        }
+    }
+    
+    func showToast(message: String) {
+        let toastLabel = UILabel()
+        toastLabel.text = message
+        toastLabel.textColor = .white
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toastLabel.textAlignment = .center
+        toastLabel.font = UIFont.systemFont(ofSize: 20, weight: .medium)
+        toastLabel.numberOfLines = 0
+        toastLabel.layer.cornerRadius = 10
+        toastLabel.clipsToBounds = true
+        toastLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(toastLabel)
+
+        NSLayoutConstraint.activate([
+            toastLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            toastLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            toastLabel.bottomAnchor.constraint(equalTo: filterButton.topAnchor, constant: -10),
+            toastLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 35)
+        ])
+
+        UIView.animate(withDuration: 0.5, delay: 2.0, options: .curveEaseOut, animations: {
+            toastLabel.alpha = 0.0
+        }) { _ in
+            toastLabel.removeFromSuperview()
+        }
     }
     
     @objc private func shuffleTapped() {

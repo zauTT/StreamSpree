@@ -17,11 +17,13 @@ class MovieViewModel {
     
     var onUpdate: (() -> Void)?
     
+    var onNoResults: (() -> Void)?
+    
     func fetchRandomTrendingMovie(retryCount: Int = 1) {
         NetworkManager.shared.fetchTrendingmovies { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
-
+                
                 switch result {
                 case .success(let allMovies):
                     self.movies = allMovies
@@ -31,20 +33,21 @@ class MovieViewModel {
                                   let genreId = self.genreId(for: selectedGenre) else { return true }
                             return movie.genreIDs.contains(genreId)
                         }()
-
+                        
                         let ratingMatches = self.minRating == nil || movie.voteAverage >= self.minRating!
-
+                        
                         return genreMatches && ratingMatches
                     }
-
+                    
                     guard let movie = filtered.randomElement() else {
                         print("No movies matched the filters.")
+                        self.onNoResults?()
                         return
                     }
-
+                    
                     self.currentMovie = movie
                     self.onUpdate?()
-
+                    
                 case .failure(let error):
                     print("Failed to fetch movies: \(error.localizedDescription)")
                     if retryCount > 0 {
@@ -60,12 +63,7 @@ class MovieViewModel {
         self.minRating = minRating
         fetchRandomTrendingMovie()
     }
-    
-    private func updateMovie(_ movie: Movie) {
-        self.currentMovie = movie
-        self.onUpdate?()
-    }
-    
+        
     private func genreId(for genreName: String) -> Int? {
         let map = [
             "action": 28, "adventure": 12, "animation": 16, "comedy": 35, "crime": 80,
@@ -74,22 +72,6 @@ class MovieViewModel {
             "science fiction": 878, "tv movie": 10770, "thriller": 53, "war": 10752, "western": 37
         ]
         return map[genreName]
-    }
-    
-    func search(byGenre genre: String) {
-        NetworkManager.shared.fetchMovies(byGenre: genre) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let movies):
-                    if movies.isEmpty {
-                        print("No movies found for genre: \(genre)")
-                    }
-                    self?.setRandomMovie(from: movies)
-                case .failure(let error):
-                    print("Failed to fetch movies by genre: \(error.localizedDescription)")
-                }
-            }
-        }
     }
     
     private func setRandomMovie(from movies: [Movie]) {
