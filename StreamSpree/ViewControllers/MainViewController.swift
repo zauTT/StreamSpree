@@ -16,6 +16,15 @@ class MainViewController: UIViewController {
     
     private let contentStack = UIStackView()
     
+    private let filterButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Filter 🎯", for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        button.setTitleColor(.systemBlue, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     private let posterImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
@@ -38,6 +47,15 @@ class MainViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .regular)
         label.textColor = .systemYellow
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let genreLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16, weight: .medium)
+        label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -85,12 +103,17 @@ class MainViewController: UIViewController {
         contentStack.addArrangedSubview(posterImageView)
         contentStack.addArrangedSubview(titleLabel)
         contentStack.addArrangedSubview(ratingLabel)
+        contentStack.addArrangedSubview(genreLabel)
         contentStack.addArrangedSubview(overviewLabel)
         
+        view.addSubview(filterButton)
         view.addSubview(shuffleButton)
         
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            filterButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            scrollView.topAnchor.constraint(equalTo: filterButton.bottomAnchor, constant: 10),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: shuffleButton.topAnchor, constant: -10),
@@ -109,6 +132,8 @@ class MainViewController: UIViewController {
             shuffleButton.heightAnchor.constraint(equalToConstant: 50)
         ])
         
+        filterButton.addTarget(self, action: #selector(filterTapped), for: .touchUpInside)
+        
         shuffleButton.addTarget(self, action: #selector(shuffleTapped), for: .touchUpInside)
         
     }
@@ -118,6 +143,7 @@ class MainViewController: UIViewController {
             guard let self = self else { return }
             self.titleLabel.text = self.viewModel.title
             self.ratingLabel.text = self.viewModel.ratings
+            self.genreLabel.text = self.viewModel.genre
             self.overviewLabel.text = self.viewModel.overwiev
             self.loadImage()
         }
@@ -125,6 +151,22 @@ class MainViewController: UIViewController {
     
     @objc private func shuffleTapped() {
         viewModel.fetchRandomTrendingMovie()
+    }
+    
+    @objc private func filterTapped() {
+        let alert = UIAlertController(title: "Filter", message: "Enter genre and min rating", preferredStyle: .alert)
+        alert.addTextField { $0.placeholder = "Genre (e.g., Action)" }
+        alert.addTextField { $0.placeholder = "Min Rating (e.g., 7.5)"; $0.keyboardType = .decimalPad }
+        
+        let apply = UIAlertAction(title: "Apply", style: .default) { _ in
+            let genre = alert.textFields?[0].text
+            let ratingText = alert.textFields?[1].text
+            let minRating = Double(ratingText ?? "")
+            self.viewModel.filterMovies(genre: genre, minRating: minRating)
+        }
+        alert.addAction(apply)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
     }
     
     private func loadImage() {
