@@ -16,6 +16,16 @@ class MainViewController: UIViewController {
     
     private let contentStack = UIStackView()
     
+    private let genres = ["Any", "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "History", "Horror", "Music", "Mystery", "Romance", "Sci-Fi", "TV Movie", "Thriller", "War", "Western"]
+    
+    private let ratings: [String] = ["Any"] + (5...10).map { String(format: "%.1f", Double($0)) }
+    
+    private let pickerView = UIPickerView()
+    
+    private var selectedGenre: String?
+    
+    private var selectedRating: Double?
+    
     private let filterButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Filter 🎯", for: .normal)
@@ -154,18 +164,27 @@ class MainViewController: UIViewController {
     }
     
     @objc private func filterTapped() {
-        let alert = UIAlertController(title: "Filter", message: "Enter genre and min rating", preferredStyle: .alert)
-        alert.addTextField { $0.placeholder = "Genre (e.g., Action)" }
-        alert.addTextField { $0.placeholder = "Min Rating (e.g., 7.5)"; $0.keyboardType = .decimalPad }
+        let alert = UIAlertController(title: "Select Filters\n\n\n\n\n\n\n\n\n", message: nil, preferredStyle: .actionSheet)
         
-        let apply = UIAlertAction(title: "Apply", style: .default) { _ in
-            let genre = alert.textFields?[0].text
-            let ratingText = alert.textFields?[1].text
-            let minRating = Double(ratingText ?? "")
-            self.viewModel.filterMovies(genre: genre, minRating: minRating)
+        pickerView.delegate = self
+        pickerView.dataSource = self
+        pickerView.frame = CGRect(x: 0, y: 10, width: alert.view.bounds.width - 20, height: 180)
+        alert.view.addSubview(pickerView)
+
+        let applyAction = UIAlertAction(title: "Apply", style: .default) { _ in
+            self.viewModel.filterMovies(genre: self.selectedGenre, minRating: self.selectedRating)
         }
-        alert.addAction(apply)
+        
+        alert.addAction(applyAction)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        if let genre = selectedGenre, let genreIndex = genres.firstIndex(of: genre) {
+            pickerView.selectRow(genreIndex, inComponent: 0, animated: false)
+        }
+        if let rating = selectedRating, let ratingIndex = ratings.firstIndex(of: String(format: "%.1f", rating)) {
+            pickerView.selectRow(ratingIndex, inComponent: 1, animated: false)
+        }
+        
         present(alert, animated: true)
     }
     
@@ -181,5 +200,27 @@ class MainViewController: UIViewController {
                 self.posterImageView.image = image
             }
         } .resume()
+    }
+}
+
+extension MainViewController: UIPickerViewDelegate, UIPickerViewDataSource {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 2
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return component == 0 ? genres.count : ratings.count
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return component == 0 ? genres[row] : ratings[row]
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if component == 0 {
+            selectedGenre = genres[row] == "Any" ? nil : genres[row]
+        } else {
+            selectedRating = ratings[row] == "Any" ? nil : Double(ratings[row])
+        }
     }
 }

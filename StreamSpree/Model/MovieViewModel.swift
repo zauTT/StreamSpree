@@ -12,22 +12,43 @@ class MovieViewModel {
     private var movies: [Movie] = []
     private(set) var currentMovie: Movie?
     
+    var selectedGenre: String? = nil
+    var minRating: Double? = nil
+    
     var onUpdate: (() -> Void)?
     
     func fetchRandomTrendingMovie(retryCount: Int = 1) {
         NetworkManager.shared.fetchTrendingmovies { [weak self] result in
             DispatchQueue.main.async {
+                guard let self = self else { return }
+
                 switch result {
-                case .success(let movies):
-                    self?.movies = movies
-                    self?.currentMovie = movies.randomElement()
-                    self?.onUpdate?()
-                case .failure(let error as NSError):
-                    if error.code == NSURLErrorNetworkConnectionLost && retryCount > 0 {
-                        print("Connection lost, retrying...")
-                        self?.fetchRandomTrendingMovie(retryCount: retryCount - 1)
-                    } else {
-                        print("Failed to fetch movies: \(error.localizedDescription)")
+                case .success(let allMovies):
+                    self.movies = allMovies
+                    let filtered = self.movies.filter { movie in
+                        let genreMatches: Bool = {
+                            guard let selectedGenre = self.selectedGenre?.lowercased(),
+                                  let genreId = self.genreId(for: selectedGenre) else { return true }
+                            return movie.genreIDs.contains(genreId)
+                        }()
+
+                        let ratingMatches = self.minRating == nil || movie.voteAverage >= self.minRating!
+
+                        return genreMatches && ratingMatches
+                    }
+
+                    guard let movie = filtered.randomElement() else {
+                        print("No movies matched the filters.")
+                        return
+                    }
+
+                    self.currentMovie = movie
+                    self.onUpdate?()
+
+                case .failure(let error):
+                    print("Failed to fetch movies: \(error.localizedDescription)")
+                    if retryCount > 0 {
+                        self.fetchRandomTrendingMovie(retryCount: retryCount - 1)
                     }
                 }
             }
@@ -35,31 +56,14 @@ class MovieViewModel {
     }
     
     func filterMovies(genre: String?, minRating: Double?) {
-        NetworkManager.shared.fetchTrendingmovies { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let allMovies):
-                    var filtered = allMovies
-                    
-                    if let genre = genre?.lowercased(), let genreId = self?.genreId(for: genre) {
-                        filtered = filtered.filter { $0.genreIDs.contains(genreId) }
-                    }
-                    
-                    if let rating = minRating {
-                        filtered = filtered.filter { $0.voteAverage >= rating }
-                    }
-                    
-                    if filtered.isEmpty {
-                        print("No matching movies for genre: \(genre ?? "-") and rating: \(minRating ?? -1)")
-                    }
-                    
-                    self?.setRandomMovie(from: filtered)
-                case .failure(let error):
-                    print("Failed to filter movies: \(error.localizedDescription)")
-                    
-                }
-            }
-        }
+        self.selectedGenre = genre == "Any" ? nil : genre
+        self.minRating = minRating
+        fetchRandomTrendingMovie()
+    }
+    
+    private func updateMovie(_ movie: Movie) {
+        self.currentMovie = movie
+        self.onUpdate?()
     }
     
     private func genreId(for genreName: String) -> Int? {
