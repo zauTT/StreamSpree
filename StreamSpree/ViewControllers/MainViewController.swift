@@ -26,6 +26,13 @@ class MainViewController: UIViewController {
     
     private var selectedRating: Double?
     
+    private let watchlistButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Add to Watchlist ❤️", for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     private let filterButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Filter 🎯", for: .normal)
@@ -94,6 +101,11 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter 🎯", style: .plain, target: self, action: #selector(filterTapped))
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Watchlist ❤️", style: .plain, target: self, action: #selector(goToWatchlistTapped))
+        
         setupLayout()
         bindViewModel()
         viewModel.fetchRandomTrendingMovie()
@@ -113,17 +125,15 @@ class MainViewController: UIViewController {
         contentStack.addArrangedSubview(posterImageView)
         contentStack.addArrangedSubview(titleLabel)
         contentStack.addArrangedSubview(ratingLabel)
+        contentStack.addArrangedSubview(watchlistButton)
         contentStack.addArrangedSubview(genreLabel)
         contentStack.addArrangedSubview(overviewLabel)
         
-        view.addSubview(filterButton)
         view.addSubview(shuffleButton)
         
         NSLayoutConstraint.activate([
-            filterButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            scrollView.topAnchor.constraint(equalTo: filterButton.bottomAnchor, constant: 10),
+
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: shuffleButton.topAnchor, constant: -10),
@@ -141,11 +151,8 @@ class MainViewController: UIViewController {
             shuffleButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
             shuffleButton.heightAnchor.constraint(equalToConstant: 50)
         ])
-        
-        filterButton.addTarget(self, action: #selector(filterTapped), for: .touchUpInside)
-        
+        watchlistButton.addTarget(self, action: #selector(addToWatchlistTapped), for: .touchUpInside)
         shuffleButton.addTarget(self, action: #selector(shuffleTapped), for: .touchUpInside)
-        
     }
     
     private func bindViewModel() {
@@ -157,7 +164,6 @@ class MainViewController: UIViewController {
             self.overviewLabel.text = self.viewModel.overwiev
             self.loadImage()
         }
-        
         viewModel.onNoResults = { [weak self] in
             self?.showToast(message: "No movies matched your filters.")
         }
@@ -179,7 +185,7 @@ class MainViewController: UIViewController {
         NSLayoutConstraint.activate([
             toastLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             toastLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            toastLabel.bottomAnchor.constraint(equalTo: filterButton.topAnchor, constant: -10),
+            toastLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             toastLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 35)
         ])
 
@@ -192,6 +198,17 @@ class MainViewController: UIViewController {
     
     @objc private func shuffleTapped() {
         viewModel.fetchRandomTrendingMovie()
+    }
+    
+    @objc private func addToWatchlistTapped() {
+        guard let movie = viewModel.currentMovie else { return }
+        WatchlistManager().addToWatchlist(movie)
+        showToast(message: "Added to Watchlist!")
+    }
+    
+    @objc private func goToWatchlistTapped() {
+        let watchlistVC = WatchlistViewController()
+        navigationController?.pushViewController(watchlistVC, animated: true)
     }
     
     @objc private func filterTapped() {
