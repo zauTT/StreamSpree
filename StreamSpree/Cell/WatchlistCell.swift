@@ -66,14 +66,14 @@ class WatchlistCell: UITableViewCell {
             posterImageView.widthAnchor.constraint(equalToConstant: 80),
             posterImageView.heightAnchor.constraint(equalToConstant: 120),
             
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 26),
             titleLabel.leadingAnchor.constraint(equalTo: posterImageView.trailingAnchor, constant: 12),
             titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             
             ratingLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
             ratingLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             
-            genreLabel.topAnchor.constraint(equalTo: ratingLabel.bottomAnchor, constant: 4),
+            genreLabel.topAnchor.constraint(equalTo: ratingLabel.bottomAnchor, constant: 8),
             genreLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             genreLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
         ])
@@ -96,5 +96,4 @@ class WatchlistCell: UITableViewCell {
             posterImageView.image = nil
         }
     }
-    
 }

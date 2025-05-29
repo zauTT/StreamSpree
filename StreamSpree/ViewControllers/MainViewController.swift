@@ -102,9 +102,9 @@ class MainViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter 🎯", style: .plain, target: self, action: #selector(filterTapped))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filterTapped))
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Watchlist ❤️", style: .plain, target: self, action: #selector(goToWatchlistTapped))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Watchlist >", style: .plain, target: self, action: #selector(goToWatchlistTapped))
         
         setupLayout()
         bindViewModel()
