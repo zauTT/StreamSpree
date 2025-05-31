@@ -1,0 +1,50 @@
+{
+  "configurations" : [
+    {
+      "id" : "E7BC7B33-C5C1-4619-8C5C-8F5C4FDF6905",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    },
+    {
+      "enabled" : false,
+      "id" : "AB3A72C3-D63A-4180-8C19-AD525067C290",
+      "name" : "Configuration 2",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "key" : "UI_TESTING",
+            "value" : "1"
+          }
+        ]
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:StreamSpree.xcodeproj",
+      "identifier" : "F1BF36802DE07FCA00897EF5",
+      "name" : "StreamSpree"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:StreamSpree.xcodeproj",
+        "identifier" : "F1BF36962DE07FCC00897EF5",
+        "name" : "StreamSpreeTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:StreamSpree.xcodeproj",
+        "identifier" : "F1BF36A02DE07FCC00897EF5",
+        "name" : "StreamSpreeUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

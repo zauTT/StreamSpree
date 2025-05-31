@@ -22,6 +22,8 @@ class WatchlistManager {
         var current = getWatchlist()
         guard !current.contains(where: { $0.id == movie.id }) else { return }
         current.append(movie)
+        print("Adding movie with ID: \(movie.id)")
+        print("Current watchlist: \(current.map { $0.id })")
         save(current)
     }
     

@@ -19,6 +19,39 @@ class MovieViewModel {
     
     var onNoResults: (() -> Void)?
     
+    /// Test initializer
+    init(testMovies: [Movie]) {
+        self.movies = testMovies
+        self.currentMovie = testMovies.first
+    }
+
+    /// Default initializer
+    init() {}
+
+    /// support shuffle in tests
+    func shuffleMovie() {
+        guard !movies.isEmpty else { return }
+        var newMovie: Movie?
+        repeat {
+            newMovie = movies.randomElement()
+        } while newMovie?.id == currentMovie?.id && movies.count > 1
+        currentMovie = newMovie
+    }
+    
+    func applyFilters(to movies: [Movie], genre: String?, minRating: Double?) -> [Movie] {
+        return movies.filter { movie in
+            let genreMatches: Bool = {
+                guard let selectedGenre = genre?.lowercased(),
+                      let genreId = self.genreId(for: selectedGenre) else { return true }
+                return movie.genreIDs.contains(genreId)
+            }()
+            
+            let ratingMatches = minRating == nil || movie.voteAverage >= minRating!
+            
+            return genreMatches && ratingMatches
+        }
+    }
+    
     func fetchRandomTrendingMovie(retryCount: Int = 1) {
         NetworkManager.shared.fetchTrendingmovies { [weak self] result in
             DispatchQueue.main.async {

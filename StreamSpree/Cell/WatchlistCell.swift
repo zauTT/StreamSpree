@@ -81,6 +81,8 @@ class WatchlistCell: UITableViewCell {
     
     func configure(with movie: Movie) {
         titleLabel.text = movie.title
+        titleLabel.accessibilityIdentifier = "watchlistMovieTitleLabel_\(movie.title)"
+
         ratingLabel.text = "⭐️ \(movie.voteAverage)"
         genreLabel.text = movie.genreNames.joined(separator: ", ")
         

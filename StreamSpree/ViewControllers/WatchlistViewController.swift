@@ -9,7 +9,6 @@ import UIKit
 
 class WatchlistViewController: UIViewController {
     
-    
     private var tableView = UITableView()
     private var movies: [Movie] = []
     private var manager = WatchlistManager()
@@ -56,6 +55,9 @@ extension WatchlistViewController: UITableViewDelegate, UITableViewDataSource {
         }
         let movie = movies[indexPath.row]
         cell.configure(with: movie)
+        
+        cell.accessibilityIdentifier = "watchlistCell_\(indexPath.row)"
+
         return cell
     }
     

@@ -4,7 +4,6 @@
 //
 //  Created by Giorgi Zautashvili on 23.05.25.
 //
-
 import XCTest
 
 final class StreamSpreeUITestsLaunchTests: XCTestCase {
@@ -18,16 +17,18 @@ final class StreamSpreeUITestsLaunchTests: XCTestCase {
     }
 
     @MainActor
-    func testLaunch() throws {
+    func testLaunchDisplaysInitialMovie() {
         let app = XCUIApplication()
+        app.launchEnvironment["UI_TESTING"] = "1"
         app.launch()
 
-        // Insert steps here to perform after app launch but before taking a screenshot,
-        // such as logging into a test account or navigating somewhere in the app
+        let titleLabel = app.staticTexts["movieTitleLabel"]
+        XCTAssertTrue(titleLabel.waitForExistence(timeout: 3), "Movie title label should be visible on launch.")
 
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = "Launch Screen"
-        attachment.lifetime = .keepAlways
-        add(attachment)
+        let shuffleButton = app.buttons["shuffleButton"]
+        XCTAssertTrue(shuffleButton.exists, "Shuffle button should be visible on launch.")
+
+        let watchlistButton = app.buttons["watchlistTabButton"]
+        XCTAssertTrue(watchlistButton.exists, "Watchlist button should be visible on launch.")
     }
 }

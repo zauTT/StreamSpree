@@ -117,6 +117,11 @@ class MovieDetailViewController: UIViewController {
         genreLabel.text = "Genres: " + movie.genreNames.joined(separator: ", ")
         ratingLabel.text = "⭐️ \(movie.voteAverage)"
         overviewLabel.text = "Description: \(movie.overview)"
+        
+        overviewLabel.accessibilityIdentifier = "movieDetailOverview"
+        
+        ratingLabel.accessibilityIdentifier = "movieDetailRating"
+        posterImageView.accessibilityIdentifier = "movieDetailPoster"
 
         if let url = movie.posterURL {
             URLSession.shared.dataTask(with: url) { data, _, _ in

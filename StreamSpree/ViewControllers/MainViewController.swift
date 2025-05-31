@@ -102,13 +102,29 @@ class MainViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filterTapped))
+        let filterNavButton = UIButton(type: .system)
+        filterNavButton.setTitle("Filter", for: .normal)
+        filterNavButton.addTarget(self, action: #selector(filterTapped), for: .touchUpInside)
+        filterNavButton.accessibilityIdentifier = "FilterButton"
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: filterNavButton)
+        
+        let goToWatchlistButton = UIButton(type: .system)
+        goToWatchlistButton.setTitle("Watchlist >", for: .normal)
+        goToWatchlistButton.addTarget(self, action: #selector(goToWatchlistTapped), for: .touchUpInside)
+        goToWatchlistButton.accessibilityIdentifier = "watchlistTabButton"
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Watchlist >", style: .plain, target: self, action: #selector(goToWatchlistTapped))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: goToWatchlistButton)
         
         setupLayout()
         bindViewModel()
         viewModel.fetchRandomTrendingMovie()
+        
+        titleLabel.accessibilityIdentifier = "movieTitleLabel"
+        goToWatchlistButton.accessibilityIdentifier = "watchlistTabButton"
+        watchlistButton.accessibilityIdentifier = "addToWatchlistButton"
+        shuffleButton.accessibilityIdentifier = "shuffleButton"
+        pickerView.accessibilityIdentifier = "genrePicker"
+        filterButton.accessibilityIdentifier = "FilterButton"
     }
     
     private func setupLayout() {
@@ -172,6 +188,11 @@ class MainViewController: UIViewController {
     func showToast(message: String) {
         let toastLabel = UILabel()
         toastLabel.text = message
+        toastLabel.isAccessibilityElement = true
+        toastLabel.accessibilityIdentifier = "toastLabel"
+        toastLabel.accessibilityLabel = message
+        toastLabel.accessibilityTraits = .staticText
+        
         toastLabel.textColor = .white
         toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.8)
         toastLabel.textAlignment = .center
@@ -180,6 +201,7 @@ class MainViewController: UIViewController {
         toastLabel.layer.cornerRadius = 10
         toastLabel.clipsToBounds = true
         toastLabel.translatesAutoresizingMaskIntoConstraints = false
+
         view.addSubview(toastLabel)
 
         NSLayoutConstraint.activate([
@@ -189,13 +211,20 @@ class MainViewController: UIViewController {
             toastLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 35)
         ])
 
-        UIView.animate(withDuration: 0.5, delay: 2.0, options: .curveEaseOut, animations: {
-            toastLabel.alpha = 0.0
-        }) { _ in
-            toastLabel.removeFromSuperview()
+        let isUITesting = ProcessInfo.processInfo.environment["UI_TESTING"] == "1"
+
+        if isUITesting {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                toastLabel.removeFromSuperview()
+            }
+        } else {
+            UIView.animate(withDuration: 0.5, delay: 2.0, options: .curveEaseOut, animations: {
+                toastLabel.alpha = 0.0
+            }) { _ in
+                toastLabel.removeFromSuperview()
+            }
         }
     }
-    
     @objc private func shuffleTapped() {
         viewModel.fetchRandomTrendingMovie()
     }
@@ -212,28 +241,18 @@ class MainViewController: UIViewController {
     }
     
     @objc private func filterTapped() {
-        let alert = UIAlertController(title: "Select Filters\n\n\n\n\n\n\n\n\n", message: nil, preferredStyle: .actionSheet)
-        
-        pickerView.delegate = self
-        pickerView.dataSource = self
-        pickerView.frame = CGRect(x: 0, y: 10, width: alert.view.bounds.width - 20, height: 180)
-        alert.view.addSubview(pickerView)
+        let filterVC = FilterViewController()
+        filterVC.genres = genres
+        filterVC.ratings = (5...10).map { Double($0) }
+        filterVC.modalPresentationStyle = .formSheet
 
-        let applyAction = UIAlertAction(title: "Apply", style: .default) { _ in
-            self.viewModel.filterMovies(genre: self.selectedGenre, minRating: self.selectedRating)
+        filterVC.onApply = { [weak self] selectedGenre, selectedRating in
+            self?.selectedGenre = selectedGenre
+            self?.selectedRating = selectedRating
+            self?.viewModel.filterMovies(genre: selectedGenre, minRating: selectedRating)
         }
-        
-        alert.addAction(applyAction)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
-        if let genre = selectedGenre, let genreIndex = genres.firstIndex(of: genre) {
-            pickerView.selectRow(genreIndex, inComponent: 0, animated: false)
-        }
-        if let rating = selectedRating, let ratingIndex = ratings.firstIndex(of: String(format: "%.1f", rating)) {
-            pickerView.selectRow(ratingIndex, inComponent: 1, animated: false)
-        }
-        
-        present(alert, animated: true)
+
+        present(filterVC, animated: true)
     }
     
     private func loadImage() {

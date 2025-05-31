@@ -8,29 +8,54 @@
 import XCTest
 @testable import StreamSpree
 
-final class StreamSpreeTests: XCTestCase {
+final class MovieViewModelTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+    func testShuffleChangesCurrentMovie() {
+        let movies = [
+            Movie(id: 1, title: "A", overview: "", posterPath: nil, voteAverage: 7.0, genreIDs: [28]),
+            Movie(id: 2, title: "B", overview: "", posterPath: nil, voteAverage: 6.5, genreIDs: [35]),
+            Movie(id: 3, title: "C", overview: "", posterPath: nil, voteAverage: 8.0, genreIDs: [18])
+        ]
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+        let viewModel = MovieViewModel(testMovies: movies)
+        let initial = viewModel.currentMovie?.id
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+        var didChange = false
+        for _ in 0..<10 {
+            viewModel.shuffleMovie()
+            if viewModel.currentMovie?.id != initial {
+                didChange = true
+                break
+            }
         }
+        XCTAssertTrue(didChange, "Shuffle did not change the current movie after multiple attempts.")
     }
-
+    
+    func testApplyFiltersWithNoGenreOrRatingReturnsAllMovies() {
+        let movies = [
+            Movie(id: 1, title: "A", overview: "", posterPath: nil, voteAverage: 8.0, genreIDs: [28]),
+            Movie(id: 2, title: "B", overview: "", posterPath: nil, voteAverage: 6.0, genreIDs: [35])
+        ]
+        
+        let viewModel = MovieViewModel(testMovies: movies)
+        
+        let filtered = viewModel.applyFilters(to: movies, genre: nil, minRating: nil)
+        
+        XCTAssertEqual(filtered.count, 2)
+    }
+    
+    func testApplyFiltersReturnsCorrectMovies() {
+        let movies = [
+            Movie(id: 1, title: "Action Movie", overview: "", posterPath: nil, voteAverage: 8.2, genreIDs: [28]),
+            Movie(id: 2, title: "Comedy Movie", overview: "", posterPath: nil, voteAverage: 7.1, genreIDs: [35]),
+            Movie(id: 3, title: "Low Rated Action", overview: "", posterPath: nil, voteAverage: 5.5, genreIDs: [28])
+        ]
+        
+        let viewModel = MovieViewModel(testMovies: movies)
+        
+        let filtered = viewModel.applyFilters(to: movies, genre: "Action", minRating: 7.0)
+        
+        XCTAssertEqual(filtered.count, 1)
+        XCTAssertEqual(filtered.first?.title, "Action Movie")
+    }
 }

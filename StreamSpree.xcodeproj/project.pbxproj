@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F10854872DE9EB0B00E65DE3 /* StreamSpree.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = StreamSpree.xctestplan; sourceTree = "<group>"; };
 		F1BF36812DE07FCA00897EF5 /* StreamSpree.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StreamSpree.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1BF36972DE07FCC00897EF5 /* StreamSpreeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamSpreeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1BF36A12DE07FCC00897EF5 /* StreamSpreeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StreamSpreeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +89,7 @@
 		F1BF36782DE07FCA00897EF5 = {
 			isa = PBXGroup;
 			children = (
+				F10854872DE9EB0B00E65DE3 /* StreamSpree.xctestplan */,
 				F1BF36832DE07FCA00897EF5 /* StreamSpree */,
 				F1BF369A2DE07FCC00897EF5 /* StreamSpreeTests */,
 				F1BF36A42DE07FCC00897EF5 /* StreamSpreeUITests */,
