@@ -69,6 +69,9 @@ extension WatchlistViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+            
             let movieToDelete = movies[indexPath.row]
             manager.removeFromWatchlist(movieToDelete)
             movies.remove(at: indexPath.row)

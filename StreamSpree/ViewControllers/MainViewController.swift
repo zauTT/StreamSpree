@@ -102,6 +102,8 @@ class MainViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
+        edgeSwipeGesture()
+        
         let filterNavButton = UIButton(type: .system)
         filterNavButton.setTitle("Filter", for: .normal)
         filterNavButton.addTarget(self, action: #selector(filterTapped), for: .touchUpInside)
@@ -125,6 +127,12 @@ class MainViewController: UIViewController {
         shuffleButton.accessibilityIdentifier = "shuffleButton"
         pickerView.accessibilityIdentifier = "genrePicker"
         filterButton.accessibilityIdentifier = "FilterButton"
+    }
+    
+    private func edgeSwipeGesture() {
+        let edgeSwipe = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(handleEdgeSwipe(_:)))
+        edgeSwipe.edges = [.right]
+        view.addGestureRecognizer(edgeSwipe)
     }
     
     private func setupLayout() {
@@ -225,11 +233,25 @@ class MainViewController: UIViewController {
             }
         }
     }
+    
+    @objc private func handleEdgeSwipe(_ gesture: UIScreenEdgePanGestureRecognizer) {
+        if gesture.state == .recognized {
+            let watchlistVC = WatchlistViewController()
+            navigationController?.pushViewController(watchlistVC, animated: true)
+        }
+    }
+    
     @objc private func shuffleTapped() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.prepare()
+        generator.impactOccurred()
         viewModel.fetchRandomTrendingMovie()
     }
     
     @objc private func addToWatchlistTapped() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+        
         guard let movie = viewModel.currentMovie else { return }
         WatchlistManager().addToWatchlist(movie)
         showToast(message: "Added to Watchlist!")
